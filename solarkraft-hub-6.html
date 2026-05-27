@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SolarKraft Hub</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0a;
+  --bg2:#111111;
+  --bg3:#1a1a1a;
+  --border:#2a2a2a;
+  --orange:#f97316;
+  --orange2:#ea6c0a;
+  --text:#f5f5f5;
+  --text2:#a0a0a0;
+  --green:#22c55e;
+  --red:#ef4444;
+  --yellow:#eab308;
+  --blue:#3b82f6;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
+h1,h2,h3,.brand{font-family:'Rajdhani',sans-serif}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--orange);border-radius:2px}
+
+/* LAYOUT */
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:260px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.main{flex:1;overflow-y:auto;background:var(--bg)}
+
+/* SIDEBAR */
+.sidebar-brand{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.brand-logo{width:40px;height:40px;background:var(--orange);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:18px;color:#000}
+.brand-text{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700}
+.brand-text span{color:var(--orange)}
+.brand-sub{font-size:10px;color:var(--text2);letter-spacing:2px;text-transform:uppercase}
+
+.sidebar-section{padding:8px 12px;font-size:10px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-top:8px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;border-radius:8px;margin:2px 8px;transition:all 0.2s;font-size:14px;color:var(--text2);position:relative}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--orange);color:#000;font-weight:600}
+.nav-item .badge{margin-left:auto;background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:600}
+.nav-item.active .badge{background:#000;color:var(--orange)}
+
+.sidebar-user{padding:16px;border-top:1px solid var(--border);margin-top:auto}
+.user-card{display:flex;align-items:center;gap:10px}
+.user-avatar{width:36px;height:36px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#000;flex-shrink:0}
+.user-name{font-weight:600;font-size:14px}
+.user-role{font-size:11px;color:var(--text2)}
+.logout-btn{margin-top:10px;width:100%;padding:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);border-radius:6px;cursor:pointer;font-size:13px;transition:all 0.2s}
+.logout-btn:hover{border-color:var(--red);color:var(--red)}
+
+/* LOGIN */
+.login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px}
+.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:40px;width:100%;max-width:400px}
+.login-logo{text-align:center;margin-bottom:32px}
+.login-logo-icon{width:64px;height:64px;background:var(--orange);border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:28px;color:#000;margin:0 auto 12px}
+.login-title{font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;text-align:center}
+.login-title span{color:var(--orange)}
+.login-sub{text-align:center;color:var(--text2);font-size:13px;margin-top:4px}
+.form-group{margin-bottom:16px}
+.form-label{font-size:12px;color:var(--text2);margin-bottom:6px;display:block;letter-spacing:0.5px;text-transform:uppercase}
+.form-input{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:12px 14px;border-radius:8px;font-size:14px;outline:none;transition:border 0.2s;font-family:'Inter',sans-serif}
+.form-input:focus{border-color:var(--orange)}
+.btn-primary{width:100%;padding:13px;background:var(--orange);color:#000;border:none;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:1px;transition:all 0.2s;margin-top:8px}
+.btn-primary:hover{background:var(--orange2)}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed}
+.error-msg{background:#ef444420;border:1px solid var(--red);color:var(--red);padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px}
+
+/* PAGE HEADER */
+.page-header{padding:24px 28px 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:gap}
+.page-title{font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700}
+.page-sub{color:var(--text2);font-size:13px;margin-top:2px}
+.btn-orange{background:var(--orange);color:#000;border:none;padding:10px 18px;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;display:flex;align-items:center;gap:6px;transition:all 0.2s;font-family:'Rajdhani',sans-serif;letter-spacing:0.5px}
+.btn-orange:hover{background:var(--orange2)}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border);padding:9px 16px;border-radius:8px;cursor:pointer;font-size:13px;transition:all 0.2s}
+.btn-ghost:hover{border-color:var(--text2);color:var(--text)}
+.btn-red{background:#ef444420;color:var(--red);border:1px solid var(--red);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:13px;transition:all 0.2s}
+.btn-red:hover{background:var(--red);color:#fff}
+
+/* CARDS & GRID */
+.page-content{padding:20px 28px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px}
+.stat-num{font-family:'Rajdhani',sans-serif;font-size:36px;font-weight:700;line-height:1}
+.stat-label{color:var(--text2);font-size:12px;margin-top:4px;text-transform:uppercase;letter-spacing:0.5px}
+.stat-card.orange{border-color:var(--orange);background:#f9731610}
+.stat-card.orange .stat-num{color:var(--orange)}
+.stat-card.green{border-color:var(--green)}
+.stat-card.green .stat-num{color:var(--green)}
+.stat-card.yellow{border-color:var(--yellow)}
+.stat-card.yellow .stat-num{color:var(--yellow)}
+
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
+.card-title{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+
+/* TABLE */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:10px 14px;font-size:11px;color:var(--text2);letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--border)}
+td{padding:12px 14px;font-size:14px;border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg3)}
+
+/* BADGES */
+.badge-status{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+.badge-pending{background:#eab30820;color:var(--yellow)}
+.badge-active{background:#3b82f620;color:var(--blue)}
+.badge-inprogress{background:#f9731620;color:var(--orange)}
+.badge-complete{background:#22c55e20;color:var(--green)}
+.badge-overdue{background:#ef444420;color:var(--red)}
+
+/* STAGES */
+.stages-bar{display:flex;gap:0;margin:12px 0;border-radius:8px;overflow:hidden}
+.stage-item{flex:1;padding:8px 4px;text-align:center;font-size:10px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;background:var(--bg3);border-right:1px solid var(--border);cursor:pointer;transition:all 0.2s}
+.stage-item:last-child{border-right:none}
+.stage-item.done{background:#22c55e20;color:var(--green)}
+.stage-item.current{background:var(--orange);color:#000}
+.stage-item.pending{color:var(--text2)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:#00000090;display:flex;align-items:center;justify-content:center;z-index:100;padding:16px}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+.modal-title{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
+.modal-close{background:var(--bg3);border:1px solid var(--border);color:var(--text2);width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{color:var(--red);border-color:var(--red)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-select{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:8px;font-size:14px;outline:none;font-family:'Inter',sans-serif}
+.form-select:focus{border-color:var(--orange)}
+.form-textarea{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:8px;font-size:14px;outline:none;font-family:'Inter',sans-serif;resize:vertical;min-height:80px}
+.form-textarea:focus{border-color:var(--orange)}
+
+/* PROJECT CARD */
+.project-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:14px;cursor:pointer;transition:all 0.2s}
+.project-card:hover{border-color:var(--orange);background:#f9731608}
+.project-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.project-name{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:600}
+.project-client{color:var(--text2);font-size:13px;margin-top:2px}
+.project-meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+.meta-item{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:4px}
+.meta-item strong{color:var(--text)}
+
+/* PAYMENT */
+.payment-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.payment-row:last-child{border-bottom:none}
+.payment-amount{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--green)}
+.payment-info{font-size:13px;color:var(--text2)}
+
+/* TASK */
+.task-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg3);border-radius:8px;margin-bottom:8px}
+.task-check{width:20px;height:20px;border-radius:4px;border:2px solid var(--border);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+.task-check.done{background:var(--green);border-color:var(--green);color:#fff}
+.task-title{flex:1;font-size:14px}
+.task-title.done-text{text-decoration:line-through;color:var(--text2)}
+.task-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600}
+
+/* MOBILE */
+.hamburger{display:none;background:transparent;border:none;color:var(--text);font-size:22px;cursor:pointer;padding:4px}
+.mobile-overlay{display:none}
+@media(max-width:768px){
+  .sidebar{position:fixed;left:-260px;top:0;bottom:0;z-index:50;transition:left 0.3s}
+  .sidebar.open{left:0}
+  .main{width:100%}
+  .hamburger{display:flex}
+  .mobile-overlay.show{display:block;position:fixed;inset:0;background:#00000060;z-index:40}
+  .page-header{padding:16px}
+  .page-content{padding:12px 16px}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .form-row{grid-template-columns:1fr}
+  .mobile-top{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg2)}
+}
+
+/* RECEIPT PRINT */
+@media print{
+  .no-print{display:none!important}
+  .receipt-paper{box-shadow:none!important}
+}
+.receipt-paper{background:#fff;color:#111;padding:32px;border-radius:8px;font-family:'Inter',sans-serif;max-width:560px;margin:0 auto}
+.receipt-header{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #f97316;padding-bottom:16px;margin-bottom:20px}
+.receipt-logo{font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700}
+.receipt-logo span{color:#f97316}
+.receipt-address{font-size:11px;color:#666;text-align:right;line-height:1.6}
+.receipt-title{text-align:center;font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:#f97316;letter-spacing:2px;margin-bottom:20px}
+.receipt-table{width:100%;border-collapse:collapse;font-size:13px}
+.receipt-table td{padding:8px 0;border-bottom:1px solid #eee;vertical-align:top}
+.receipt-table td:first-child{color:#666;width:45%}
+.receipt-table td:last-child{font-weight:500;text-align:right}
+.receipt-total{background:#f97316;color:#fff;padding:12px 16px;border-radius:8px;display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+.receipt-total-label{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700}
+.receipt-total-amount{font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700}
+.receipt-footer{margin-top:20px;text-align:center;font-size:11px;color:#999;border-top:1px solid #eee;padding-top:12px}
+
+/* LOADING */
+.loading{display:flex;align-items:center;justify-content:center;height:200px;color:var(--text2);gap:10px}
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.empty{text-align:center;padding:40px 20px;color:var(--text2)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+
+/* AGENT DASHBOARD */
+.my-task-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:14px}
+.stage-detail{background:var(--bg3);border-radius:8px;padding:14px;margin-top:12px}
+.stage-name{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:600;color:var(--orange)}
+.progress-bar{height:6px;background:var(--border);border-radius:3px;margin:12px 0}
+.progress-fill{height:100%;background:var(--orange);border-radius:3px;transition:width 0.5s}
+
+.chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;background:var(--bg3);border:1px solid var(--border);color:var(--text2)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const { createClient } = supabase;
+const SUPABASE_URL = 'https://lahgwnhqlsctykassxni.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhaGd3bmhxbHNjdHlrYXNzeG5pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NDY0NjUsImV4cCI6MjA5NTEyMjQ2NX0.w1OhrkOHa-EGgZLY8UhxEtro-paOR6lrxqpsWEIrRAU';
+const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhaGd3bmhxbHNjdHlrYXNzeG5pIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTU0NjQ2NSwiZXhwIjoyMDk1MTIyNDY1fQ.DEAdxJhyt0BWF02JVY7Ci1yIocBR82f_t_yObqM6_SY';
+const sbAdmin = createClient(SUPABASE_URL, SERVICE_KEY);
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const STAGES = ['Document Process','3D Model','Client Meeting','Installation','Payment/Billing'];
+
+// ─── ICONS ───────────────────────────────────────────────
+const Icon = {
+  dash: '⊞', tasks: '☑', projects: '📁', install: '⚡', team: '👥',
+  payment: '💰', settings: '⚙', logout: '↩', menu: '☰', close: '✕',
+  plus: '+', sun: '☀', check: '✓', edit: '✎', trash: '🗑', eye: '👁',
+  print: '🖨', alert: '⚠', user: '👤', back: '←'
+};
+
+// ─── HELPERS ─────────────────────────────────────────────
+const fmt = (n) => '₹' + Number(n||0).toLocaleString('en-IN');
+const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+const initials = (name='') => name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+
+// ─── APP ──────────────────────────────────────────────────
+function App() {
+  const [user, setUser] = React.useState(null);
+  const [profile, setProfile] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    // Timeout fallback - if loading takes too long, show login
+    const timeout = setTimeout(() => setLoading(false), 5000);
+    sb.auth.getSession().then(({data:{session}}) => {
+      clearTimeout(timeout);
+      if(session) loadProfile(session.user);
+      else setLoading(false);
+    }).catch(() => { clearTimeout(timeout); setLoading(false); });
+    const {data:{subscription}} = sb.auth.onAuthStateChange((_,session) => {
+      if(session) loadProfile(session.user);
+      else { setUser(null); setProfile(null); setLoading(false); }
+    });
+    return () => { subscription.unsubscribe(); clearTimeout(timeout); };
+  },[]);
+
+  async function loadProfile(u) {
+    setUser(u);
+    try {
+      const {data, error} = await sb.from('profiles').select('id,name,role,designation,phone,is_admin').eq('id',u.id).maybeSingle();
+      console.log('Profile loaded:', data, error);
+      if(data && data.id) { 
+        setProfile(data); 
+      } else { 
+        setProfile({id:u.id, name:'User', is_admin:false, role:'agent'}); 
+      }
+    } catch(e) { 
+      console.log('Profile error:', e);
+      setProfile({id:u.id, name:'User', is_admin:false, role:'agent'}); 
+    }
+    setLoading(false);
+  }
+
+  if(loading) return <div className="loading"><div className="spinner"/><span>Loading SolarKraft...</span></div>;
+  if(!user) return <LoginPage/>;
+  // Check both is_admin flag AND email for admin
+  const isAdmin = profile?.is_admin === true || user?.email === 'admin@solarkraft.in';
+  if(isAdmin) return <AdminApp user={user} profile={{...profile, is_admin:true, name: profile?.name||'Tanav Dhawan'}}/>;
+  return <AgentApp user={user} profile={profile}/>;
+}
+
+// ─── LOGIN ────────────────────────────────────────────────
+function LoginPage() {
+  const [email,setEmail] = React.useState('');
+  const [pass,setPass] = React.useState('');
+  const [err,setErr] = React.useState('');
+  const [loading,setLoading] = React.useState(false);
+
+  async function login(e) {
+    e.preventDefault();
+    setLoading(true); setErr('');
+    const {error} = await sb.auth.signInWithPassword({email,password:pass});
+    if(error) { setErr('Invalid email or password'); setLoading(false); }
+  }
+
+  return (
+    <div className="login-page">
+      <div className="login-card">
+        <div className="login-logo">
+          <div className="login-logo-icon">SK</div>
+          <div className="login-title">Solar<span>Kraft</span></div>
+          <div className="login-sub">Project Hub — Sign in to continue</div>
+        </div>
+        {err && <div className="error-msg">{Icon.alert} {err}</div>}
+        <form onSubmit={login}>
+          <div className="form-group">
+            <label className="form-label">Email</label>
+            <input className="form-input" type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="your@email.com" required/>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <input className="form-input" type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="••••••••" required/>
+          </div>
+          <button className="btn-primary" disabled={loading}>{loading?'Signing in...':'Sign In'}</button>
+        </form>
+        <div style={{marginTop:20,padding:14,background:'var(--bg3)',borderRadius:8,fontSize:12,color:'var(--text2)'}}>
+          <strong style={{color:'var(--orange)'}}>Admin:</strong> admin@solarkraft.in / Admin@123
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── ADMIN APP ────────────────────────────────────────────
+function AdminApp({user,profile}) {
+  const [page,setPage] = React.useState('dashboard');
+  const [sidebarOpen,setSidebarOpen] = React.useState(false);
+  const [counts,setCounts] = React.useState({projects:0,clients:0,tasks:0,payments:0});
+
+  React.useEffect(()=>{loadCounts();},[]);
+
+  async function loadCounts() {
+    const [p,c,t] = await Promise.all([
+      sb.from('projects').select('id',{count:'exact',head:true}),
+      sb.from('clients').select('id',{count:'exact',head:true}),
+      sb.from('daily_tasks').select('id',{count:'exact',head:true}).eq('status','pending'),
+    ]);
+    setCounts({projects:p.count||0,clients:c.count||0,tasks:t.count||0});
+  }
+
+  const nav = (p) => { setPage(p); setSidebarOpen(false); };
+
+  return (
+    <div className="app">
+      <div className={`mobile-overlay ${sidebarOpen?'show':''}`} onClick={()=>setSidebarOpen(false)}/>
+      <div className={`sidebar ${sidebarOpen?'open':''}`}>
+        <div className="sidebar-brand">
+          <div className="brand-logo">SK</div>
+          <div>
+            <div className="brand-text">Solar<span>Kraft</span></div>
+            <div className="brand-sub">Project Hub</div>
+          </div>
+        </div>
+        <div className="sidebar-section">Workspace</div>
+        {[
+          {id:'dashboard',label:'Dashboard',icon:Icon.dash},
+          {id:'tasks',label:'Daily Tasks',icon:Icon.tasks,badge:counts.tasks||null},
+          {id:'projects',label:'Projects',icon:Icon.projects,badge:counts.projects||null},
+          {id:'installations',label:'On-Going Installations',icon:Icon.install},
+        ].map(item=>(
+          <div key={item.id} className={`nav-item ${page===item.id?'active':''}`} onClick={()=>nav(item.id)}>
+            <span>{item.icon}</span><span>{item.label}</span>
+            {item.badge?<span className="badge">{item.badge}</span>:null}
+          </div>
+        ))}
+        <div className="sidebar-section">Management</div>
+        {[
+          {id:'team',label:'Team',icon:Icon.team},
+          {id:'clients',label:'Clients',icon:Icon.user},
+          {id:'payments',label:'Payments',icon:Icon.payment},
+        ].map(item=>(
+          <div key={item.id} className={`nav-item ${page===item.id?'active':''}`} onClick={()=>nav(item.id)}>
+            <span>{item.icon}</span><span>{item.label}</span>
+          </div>
+        ))}
+        <div className="sidebar-user">
+          <div className="user-card">
+            <div className="user-avatar">{initials(profile?.name||'Admin')}</div>
+            <div><div className="user-name">{profile?.name||'Admin'}</div><div className="user-role">Administrator</div></div>
+          </div>
+          <button className="logout-btn" onClick={()=>sb.auth.signOut()}>{Icon.logout} Sign Out</button>
+        </div>
+      </div>
+      <div className="main">
+        <div className="mobile-top no-print">
+          <button className="hamburger" onClick={()=>setSidebarOpen(true)}>{Icon.menu}</button>
+          <div className="brand-text" style={{fontSize:18}}>Solar<span style={{color:'var(--orange)'}}>Kraft</span></div>
+        </div>
+        {page==='dashboard' && <AdminDashboard counts={counts} setPage={setPage}/>}
+        {page==='tasks' && <TasksPage isAdmin={true}/>}
+        {page==='projects' && <ProjectsPage/>}
+        {page==='installations' && <InstallationsPage/>}
+        {page==='team' && <TeamPage/>}
+        {page==='clients' && <ClientsPage/>}
+        {page==='payments' && <PaymentsPage/>}
+      </div>
+    </div>
+  );
+}
+
+// ─── ADMIN DASHBOARD ──────────────────────────────────────
+function AdminDashboard({counts,setPage}) {
+  const [projects,setProjects] = React.useState([]);
+  const [tasks,setTasks] = React.useState([]);
+  React.useEffect(()=>{
+    sb.from('projects').select('*,clients(name)').order('created_at',{ascending:false}).limit(5).then(({data})=>setProjects(data||[]));
+    sb.from('daily_tasks').select('*,profiles(name)').eq('status','pending').order('due_date').limit(5).then(({data})=>setTasks(data||[]));
+  },[]);
+
+  return (
+    <div>
+      <div className="page-header">
+        <div>
+          <div className="page-title">{Icon.sun} Dashboard</div>
+          <div className="page-sub">{new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
+        </div>
+      </div>
+      <div className="page-content">
+        <div className="stats-grid">
+          <div className="stat-card orange"><div className="stat-num">{counts.projects}</div><div className="stat-label">Total Projects</div></div>
+          <div className="stat-card yellow"><div className="stat-num">{counts.tasks}</div><div className="stat-label">Pending Tasks</div></div>
+          <div className="stat-card green"><div className="stat-num">{counts.clients||0}</div><div className="stat-label">Clients</div></div>
+        </div>
+        <div className="card">
+          <div className="card-title">Recent Projects <button className="btn-orange" style={{fontSize:12,padding:'6px 12px'}} onClick={()=>setPage('projects')}>View All</button></div>
+          {projects.length===0?<div className="empty"><div className="empty-icon">📁</div>No projects yet</div>:
+          projects.map(p=>(
+            <div key={p.id} className="project-card" style={{marginBottom:10}}>
+              <div className="project-header">
+                <div><div className="project-name">{p.title}</div><div className="project-client">{p.clients?.name}</div></div>
+                <span className={`badge-status badge-${p.status}`}>{p.status}</span>
+              </div>
+              <div className="stages-bar">
+                {STAGES.map((s,i)=>{
+                  const stageIdx = STAGES.indexOf(p.current_stage||STAGES[0]);
+                  const cls = i<stageIdx?'done':i===stageIdx?'current':'pending';
+                  return <div key={s} className={`stage-item ${cls}`}>{s.split(' ')[0]}</div>;
+                })}
+              </div>
+              <div className="project-meta">
+                <div className="meta-item"><span>Capacity:</span><strong>{p.capacity||'—'}</strong></div>
+                <div className="meta-item"><span>Phase:</span><strong>{p.phase||'—'}</strong></div>
+                <div className="meta-item"><span>Total:</span><strong>{fmt(p.total_amount)}</strong></div>
+                <div className="meta-item"><span>Paid:</span><strong style={{color:'var(--green)'}}>{fmt(p.amount_paid)}</strong></div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="card">
+          <div className="card-title">Pending Tasks</div>
+          {tasks.length===0?<div className="empty"><div className="empty-icon">✅</div>All tasks done!</div>:
+          tasks.map(t=>(
+            <div key={t.id} className="task-item">
+              <div className="task-check" style={{background:'var(--border)'}}/>
+              <div className="task-title">{t.title}</div>
+              <span className={`task-badge badge-status badge-${t.priority==='high'?'overdue':t.priority==='medium'?'inprogress':'active'}`}>{t.priority}</span>
+              <span className="chip">{t.profiles?.name||'—'}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── PROJECTS PAGE ────────────────────────────────────────
+function ProjectsPage() {
+  const [projects,setProjects] = React.useState([]);
+  const [clients,setClients] = React.useState([]);
+  const [team,setTeam] = React.useState([]);
+  const [loading,setLoading] = React.useState(true);
+  const [showAdd,setShowAdd] = React.useState(false);
+  const [selected,setSelected] = React.useState(null);
+  const [form,setForm] = React.useState({title:'',client_id:'',capacity:'',phase:'1',total_amount:0});
+
+  React.useEffect(()=>{ load(); },[]);
+
+  async function load() {
+    setLoading(true);
+    const [p,c,t] = await Promise.all([
+      sb.from('projects').select('*,clients(name),project_stages(*)').order('created_at',{ascending:false}),
+      sb.from('clients').select('*').order('name'),
+      sb.from('profiles').select('*').order('name'),
+    ]);
+    setProjects(p.data||[]); setClients(c.data||[]); setTeam(t.data||[]);
+    setLoading(false);
+  }
+
+  async function saveProject(e) {
+    e.preventDefault();
+    const {data:proj} = await sb.from('projects').insert({...form}).select().single();
+    // Create 5 stages
+    await sb.from('project_stages').insert(STAGES.map((s,i)=>({project_id:proj.id,stage_name:s,stage_order:i+1,status:i===0?'pending':'pending'})));
+    setShowAdd(false); setForm({title:'',client_id:'',capacity:'',phase:'1',total_amount:0}); load();
+  }
+
+  async function updateStage(stageId, updates) {
+    await sb.from('project_stages').update(updates).eq('id',stageId);
+    load();
+  }
+
+  if(selected) return <ProjectDetail project={selected} team={team} onBack={()=>{setSelected(null);load();}} onUpdate={load}/>;
+
+  return (
+    <div>
+      <div className="page-header">
+        <div><div className="page-title">📁 Projects</div><div className="page-sub">{projects.length} total projects</div></div>
+        <button className="btn-orange" onClick={()=>setShowAdd(true)}>{Icon.plus} New Project</button>
+      </div>
+      <div className="page-content">
+        {loading?<div className="loading"><div className="spinner"/>Loading...</div>:
+        projects.length===0?<div className="empty"><div className="empty-icon">📁</div><p>No projects yet. Create your first project!</p></div>:
+        projects.map(p=>{
+          const stages = p.project_stages||[];
+          const done = stages.filter(s=>s.status==='complete').length;
+          const pct = stages.length?Math.round(done/stages.length*100):0;
+          return (
+            <div key={p.id} className="project-card" onClick={()=>setSelected(p)}>
+              <div className="project-header">
+                <div><div className="project-name">{p.title}</div><div className="project-client">👤 {p.clients?.name||'No Client'}</div></div>
+                <span className={`badge-status badge-${p.status}`}>{p.status}</span>
+              </div>
+              <div className="stages-bar">
+                {STAGES.map((s,i)=>{
+                  const st = stages.find(x=>x.stage_order===i+1);
+                  const cls = st?.status==='complete'?'done':st?.status==='inprogress'?'current':'pending';
+                  return <div key={s} className={`stage-item ${cls}`}>{s.split(' ')[0]}</div>;
+                })}
+              </div>
+              <div className="progress-bar"><div className="progress-fill" style={{width:pct+'%'}}/></div>
+              <div className="project-meta">
+                <div className="meta-item">Capacity: <strong>{p.capacity||'—'}</strong></div>
+                <div className="meta-item">Phase: <strong>{p.phase}</strong></div>
+                <div className="meta-item">Total: <strong>{fmt(p.total_amount)}</strong></div>
+                <div className="meta-item">Paid: <strong style={{color:'var(--green)'}}>{fmt(p.amount_paid)}</strong></div>
+                <div className="meta-item">Progress: <strong style={{color:'var(--orange)'}}>{pct}%</strong></div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {showAdd && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-title">New Project <button className="modal-close" onClick={()=>setShowAdd(false)}>{Icon.close}</button></div>
+            <form onSubmit={saveProject}>
+              <div className="form-group"><label className="form-label">Project Title</label>
+                <input className="form-input" value={form.title} onChange={e=>setForm({...form,title:e.target.value})} required placeholder="e.g. Rooftop Solar — Mr. Sharma"/></div>
+              <div className="form-group"><label className="form-label">Client</label>
+                <select className="form-select" value={form.client_id} onChange={e=>setForm({...form,client_id:e.target.value})} required>
+                  <option value="">Select Client</option>
+                  {clients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+                </select></div>
+              <div className="form-row">
+                <div className="form-group"><label className="form-label">Capacity (kW)</label>
+                  <input className="form-input" value={form.capacity} onChange={e=>setForm({...form,capacity:e.target.value})} placeholder="e.g. 10kW"/></div>
+                <div className="form-group"><label className="form-label">Phase</label>
+                  <select className="form-select" value={form.phase} onChange={e=>setForm({...form,phase:e.target.value})}>
+                    <option value="1">1 Phase</option><option value="3">3 Phase</option>
+                  </select></div>
+              </div>
+              <div className="form-group"><label className="form-label">Total Amount (₹)</label>
+                <input className="form-input" type="number" value={form.total_amount} onChange={e=>setForm({...form,total_amount:e.target.value})} placeholder="0"/></div>
+              <div style={{display:'flex',gap:10,marginTop:8}}>
+                <button className="btn-orange" style={{flex:1}} type="submit">Create Project</button>
+                <button className="btn-ghost" type="button" onClick={()=>setShowAdd(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── PROJECT DETAIL ───────────────────────────────────────
+function ProjectDetail({project,team,onBack,onUpdate}) {
+  const [stages,setStages] = React.useState([]);
+  const [payments,setPayments] = React.useState([]);
+  const [showPay,setShowPay] = React.useState(false);
+  const [showReceipt,setShowReceipt] = React.useState(null);
+  const [payForm,setPayForm] = React.useState({amount:0,notes:'',received_by:'',payment_date:new Date().toISOString().split('T')[0]});
+  const [proj,setProj] = React.useState(project);
+
+  React.useEffect(()=>{ load(); },[]);
+
+  async function load() {
+    const [s,p,pr] = await Promise.all([
+      sb.from('project_stages').select('*,profiles(name)').eq('project_id',project.id).order('stage_order'),
+      sb.from('payments').select('*,profiles(name)').eq('project_id',project.id).order('created_at',{ascending:false}),
+      sb.from('projects').select('*,clients(*)').eq('id',project.id).single(),
+    ]);
+    setStages(s.data||[]); setPayments(p.data||[]); setProj(pr.data||project);
+  }
+
+  async function assignStage(stageId, userId) {
+    await sb.from('project_stages').update({assigned_to:userId||null}).eq('id',stageId);
+    load();
+  }
+
+  async function updateStageStatus(stageId, status) {
+    const updates = {status};
+    if(status==='complete') updates.completed_at = new Date().toISOString();
+    await sb.from('project_stages').update(updates).eq('id',stageId);
+    load();
+  }
+
+  async function addPayment(e) {
+    e.preventDefault();
+    const installNum = payments.length+1;
+    await sb.from('payments').insert({...payForm,project_id:project.id,installment_number:installNum,amount:Number(payForm.amount)});
+    // Update amount paid
+    const totalPaid = payments.reduce((s,p)=>s+Number(p.amount),0) + Number(payForm.amount);
+    await sb.from('projects').update({amount_paid:totalPaid}).eq('id',project.id);
+    setShowPay(false); setPayForm({amount:0,notes:'',received_by:'',payment_date:new Date().toISOString().split('T')[0]}); load();
+  }
+
+  const remaining = Number(proj.total_amount||0) - Number(proj.amount_paid||0);
+
+  return (
+    <div>
+      <div className="page-header">
+        <div style={{display:'flex',alignItems:'center',gap:12}}>
+          <button className="btn-ghost" onClick={onBack}>{Icon.back} Back</button>
+          <div><div className="page-title">{proj.title}</div><div className="page-sub">👤 {proj.clients?.name}</div></div>
+        </div>
+        <button className="btn-orange" onClick={()=>setShowPay(true)}>{Icon.payment} Add Payment</button>
+      </div>
+      <div className="page-content">
+        {/* Summary */}
+        <div className="stats-grid" style={{marginBottom:20}}>
+          <div className="stat-card orange"><div className="stat-num" style={{fontSize:22}}>{fmt(proj.total_amount)}</div><div className="stat-label">Total Amount</div></div>
+          <div className="stat-card green"><div className="stat-num" style={{fontSize:22}}>{fmt(proj.amount_paid)}</div><div className="stat-label">Amount Paid</div></div>
+          <div className="stat-card yellow"><div className="stat-num" style={{fontSize:22}}>{fmt(remaining)}</div><div className="stat-label">Remaining</div></div>
+        </div>
+
+        {/* Stages */}
+        <div className="card">
+          <div className="card-title">Project Stages</div>
+          {stages.map((s,i)=>(
+            <div key={s.id} style={{padding:'14px 0',borderBottom:i<stages.length-1?'1px solid var(--border)':'none'}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:8}}>
+                <div>
+                  <span style={{fontFamily:'Rajdhani',fontWeight:600,fontSize:16}}>{s.stage_order}. {s.stage_name}</span>
+                  {s.profiles && <span className="chip" style={{marginLeft:8}}>👤 {s.profiles.name}</span>}
+                </div>
+                <span className={`badge-status badge-${s.status}`}>{s.status}</span>
+              </div>
+              <div style={{display:'flex',gap:8,marginTop:10,flexWrap:'wrap'}}>
+                <select className="form-select" style={{flex:1,minWidth:140,padding:'7px 10px',fontSize:13}} value={s.assigned_to||''} onChange={e=>assignStage(s.id,e.target.value)}>
+                  <option value="">Assign to...</option>
+                  {team.map(t=><option key={t.id} value={t.id}>{t.name} — {t.designation}</option>)}
+                </select>
+                <select className="form-select" style={{width:140,padding:'7px 10px',fontSize:13}} value={s.status} onChange={e=>updateStageStatus(s.id,e.target.value)}>
+                  <option value="pending">Pending</option>
+                  <option value="inprogress">In Progress</option>
+                  <option value="complete">Complete</option>
+                </select>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Payments */}
+        <div className="card">
+          <div className="card-title">Payment History ({payments.length} installments)</div>
+          {payments.length===0?<div className="empty"><div className="empty-icon">💰</div>No payments yet</div>:
+          payments.map((p,i)=>(
+            <div key={p.id} className="payment-row">
+              <div>
+                <div className="payment-amount">{fmt(p.amount)}</div>
+                <div className="payment-info">Installment #{p.installment_number} • {fmtDate(p.payment_date)} • {p.profiles?.name||'—'}</div>
+                {p.notes && <div className="payment-info">{p.notes}</div>}
+              </div>
+              <button className="btn-orange" style={{fontSize:12,padding:'6px 12px'}} onClick={()=>setShowReceipt({payment:p,project:proj})}>
+                {Icon.print} Receipt
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Add Payment Modal */}
+      {showPay && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-title">Add Payment <button className="modal-close" onClick={()=>setShowPay(false)}>{Icon.close}</button></div>
+            <form onSubmit={addPayment}>
+              <div className="form-group"><label className="form-label">Amount (₹)</label>
+                <input className="form-input" type="number" value={payForm.amount} onChange={e=>setPayForm({...payForm,amount:e.target.value})} required/></div>
+              <div className="form-group"><label className="form-label">Payment Date</label>
+                <input className="form-input" type="date" value={payForm.payment_date} onChange={e=>setPayForm({...payForm,payment_date:e.target.value})}/></div>
+              <div className="form-group"><label className="form-label">Received By</label>
+                <select className="form-select" value={payForm.received_by} onChange={e=>setPayForm({...payForm,received_by:e.target.value})}>
+                  <option value="">Select Agent</option>
+                  {team.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}
+                </select></div>
+              <div className="form-group"><label className="form-label">Notes</label>
+                <textarea className="form-textarea" value={payForm.notes} onChange={e=>setPayForm({...payForm,notes:e.target.value})} placeholder="Optional notes..."/></div>
+              <div style={{background:'var(--bg3)',padding:12,borderRadius:8,marginBottom:12,fontSize:13}}>
+                <div style={{display:'flex',justifyContent:'space-between'}}><span style={{color:'var(--text2)'}}>Installment #</span><strong>{payments.length+1}</strong></div>
+                <div style={{display:'flex',justifyContent:'space-between',marginTop:6}}><span style={{color:'var(--text2)'}}>After this, Remaining</span><strong style={{color:remaining-Number(payForm.amount||0)<0?'var(--red)':'var(--green)'}}>{fmt(remaining-Number(payForm.amount||0))}</strong></div>
+              </div>
+              <div style={{display:'flex',gap:10}}>
+                <button className="btn-orange" style={{flex:1}} type="submit">Save Payment</button>
+                <button className="btn-ghost" type="button" onClick={()=>setShowPay(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Receipt Modal */}
+      {showReceipt && <ReceiptModal data={showReceipt} onClose={()=>setShowReceipt(null)}/>}
+    </div>
+  );
+}
+
+// ─── RECEIPT ──────────────────────────────────────────────
+function ReceiptModal({data,onClose}) {
+  const {payment,project} = data;
+  const remaining = Number(project.total_amount||0) - Number(project.amount_paid||0);
+
+  function printReceipt() {
+    window.print();
+  }
+
+  return (
+    <div className="modal-overlay no-print">
+      <div className="modal" style={{maxWidth:600}}>
+        <div className="modal-title no-print">Payment Receipt <button className="modal-close" onClick={onClose}>{Icon.close}</button></div>
+        <div className="receipt-paper" id="receipt">
+          <div className="receipt-header">
+            <div>
+              <div className="receipt-logo">Solar<span>Kraft</span></div>
+              <div style={{fontSize:11,color:'#666',marginTop:2}}>Stolar Energy Solutions Pvt. Ltd.</div>
+            </div>
+            <div className="receipt-address">
+              2145, Outram Lines, Kingsway Camp<br/>
+              GTB Nagar, New Delhi — 110009<br/>
+              📞 9871167045 / 9958745237<br/>
+              🌐 www.solarkraft.in<br/>
+              GST: 07ABPCS0902C1ZM
+            </div>
+          </div>
+          <div className="receipt-title">PAYMENT RECEIPT</div>
+          <table className="receipt-table">
+            <tbody>
+              <tr><td>Receipt No.</td><td>#{String(payment.installment_number).padStart(4,'0')}-{project.id?.slice(0,6).toUpperCase()}</td></tr>
+              <tr><td>Date</td><td>{fmtDate(payment.payment_date)}</td></tr>
+              <tr><td>Client Name</td><td>{project.clients?.name}</td></tr>
+              <tr><td>Client Address</td><td>{project.clients?.address||'—'}</td></tr>
+              <tr><td>Client Phone</td><td>{project.clients?.phone||'—'}</td></tr>
+              <tr><td>Project</td><td>{project.title}</td></tr>
+              <tr><td>Capacity</td><td>{project.capacity||'—'}</td></tr>
+              <tr><td>Phase</td><td>{project.phase} Phase</td></tr>
+              <tr><td>Installment No.</td><td>#{payment.installment_number}</td></tr>
+              <tr><td>Total Project Amount</td><td>{fmt(project.total_amount)}</td></tr>
+              <tr><td>Previously Paid</td><td>{fmt(Number(project.amount_paid||0)-Number(payment.amount||0))}</td></tr>
+              <tr><td>This Payment</td><td style={{color:'#22c55e',fontWeight:700}}>{fmt(payment.amount)}</td></tr>
+              <tr><td>Remaining Balance</td><td style={{color:remaining>0?'#ef4444':'#22c55e',fontWeight:700}}>{fmt(remaining)}</td></tr>
+              {payment.notes && <tr><td>Notes</td><td>{payment.notes}</td></tr>}
+            </tbody>
+          </table>
+          <div className="receipt-total">
+            <div className="receipt-total-label">Amount Received</div>
+            <div className="receipt-total-amount">{fmt(payment.amount)}</div>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20,marginTop:24}}>
+            <div style={{borderTop:'1px solid #ddd',paddingTop:8,textAlign:'center',fontSize:12,color:'#666'}}>Customer Signature</div>
+            <div style={{borderTop:'1px solid #ddd',paddingTop:8,textAlign:'center',fontSize:12,color:'#666'}}>Authorised Signatory</div>
+          </div>
+          <div className="receipt-footer">
+            Thank you for choosing SolarKraft — Energy for today, savings for tomorrow ☀️<br/>
+            This is a computer generated receipt.
+          </div>
+        </div>
+        <div className="no-print" style={{display:'flex',gap:10,marginTop:16}}>
+          <button className="btn-orange" style={{flex:1}} onClick={printReceipt}>{Icon.print} Print Receipt</button>
+          <button className="btn-ghost" onClick={onClose}>Close</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── TEAM PAGE ────────────────────────────────────────────
+function TeamPage() {
+  const [team,setTeam] = React.useState([]);
+  const [showAdd,setShowAdd] = React.useState(false);
+  const [form,setForm] = React.useState({name:'',email:'',designation:'',phone:'',password:'',is_admin:false});
+  const [loading,setLoading] = React.useState(true);
+  const [err,setErr] = React.useState('');
+
+  React.useEffect(()=>{ load(); },[]);
+
+  async function load() {
+    setLoading(true);
+    const {data} = await sb.from('profiles').select('*').order('name');
+    setTeam(data||[]); setLoading(false);
+  }
+
+  async function addMember(e) {
+    e.preventDefault(); setErr('');
+    try {
+      // Use admin API to create user
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SERVICE_KEY}`,
+          'apikey': SERVICE_KEY
+        },
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+          email_confirm: true,
+          user_metadata: { name: form.name }
+        })
+      });
+      const result = await res.json();
+      if(result.error || !result.id) { setErr(result.error?.message || result.msg || 'Error creating user'); return; }
+      // Add profile
+      await sbAdmin.from('profiles').insert({
+        id: result.id,
+        name: form.name,
+        designation: form.designation,
+        phone: form.phone,
+        role: form.is_admin ? 'admin' : 'agent',
+        is_admin: form.is_admin
+      });
+      setShowAdd(false); setForm({name:'',email:'',designation:'',phone:'',password:'',is_admin:false}); load();
+    } catch(e) { setErr(e.message); }
+  }
+
+  return (
+    <div>
+      <div className="page-header">
+        <div><div className="page-title">👥 Team</div><div className="page-sub">{team.length} members</div></div>
+        <button className="btn-orange" onClick={()=>setShowAdd(true)}>{Icon.plus} Add Member</button>
+      </div>
+      <div className="page-content">
+        <div className="card">
+          {loading?<div className="loading"><div className="spinner"/>Loading...</div>:
+          team.length===0?<div className="empty"><div className="empty-icon">👥</div>No team members yet</div>:
+          <div className="table-wrap">
+            <table>
+              <thead><tr><th>Name</th><th>Role</th><th>Designation</th><th>Phone</th><th>Type</th></tr></thead>
+              <tbody>
+                {team.map(m=>(
+                  <tr key={m.id}>
+                    <td><div style={{display:'flex',alignItems:'center',gap:10}}><div className="user-avatar" style={{width:32,height:32,fontSize:12}}>{initials(m.name)}</div>{m.name}</div></td>
+                    <td><span className={`badge-status ${m.is_admin?'badge-complete':'badge-active'}`}>{m.is_admin?'Admin':'Agent'}</span></td>
+                    <td>{m.designation||'—'}</td>
+                    <td>{m.phone||'—'}</td>
+                    <td>{m.role}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>}
+        </div>
+      </div>
+
+      {showAdd && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-title">Add Team Member <button className="modal-close" onClick={()=>setShowAdd(false)}>{Icon.close}</button></div>
+            {err && <div className="error-msg">{err}</div>}
+            <form onSubmit={addMember}>
+              <div className="form-group"><label className="form-label">Full Name</label>
+                <input className="form-input" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} required/></div>
+              <div className="form-group"><label className="form-label">Email</label>
+                <input className="form-input" type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} required/></div>
+              <div className="form-group"><label className="form-label">Password</label>
+                <input className="form-input" type="password" value={form.password} onChange={e=>setForm({...form,password:e.target.value})} required minLength={6}/></div>
+              <div className="form-row">
+                <div className="form-group"><label className="form-label">Designation</label>
+                  <input className="form-input" value={form.designation} onChange={e=>setForm({...form,designation:e.target.value})} placeholder="e.g. Engineer 1"/></div>
+                <div className="form-group"><label className="form-label">Phone</label>
+                  <input className="form-input" value={form.phone} onChange={e=>setForm({...form,phone:e.target.value})} placeholder="9XXXXXXXXX"/></div>
+              </div>
+              <div className="form-group" style={{display:'flex',alignItems:'center',gap:10}}>
+                <input type="checkbox" id="isAdmin" checked={form.is_admin} onChange={e=>setForm({...form,is_admin:e.target.checked})} style={{width:16,height:16,accentColor:'var(--orange)'}}/>
+                <label htmlFor="isAdmin" style={{fontSize:14,cursor:'pointer'}}>Make Admin</label>
+              </div>
+              <div style={{display:'flex',gap:10,marginTop:8}}>
+                <button className="btn-orange" style={{flex:1}} type="submit">Add Member</button>
+                <button className="btn-ghost" type="button" onClick={()=>setShowAdd(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── CLIENTS PAGE ─────────────────────────────────────────
+function ClientsPage() {
+  const [clients,setClients] = React.useState([]);
+  const [showAdd,setShowAdd] = React.useState(false);
+  const [form,setForm] = React.useState({name:'',address:'',phone:'',email:''});
+  const [loading,setLoading] = React.useState(true);
+
+  React.useEffect(()=>{ load(); },[]);
+  async function load() {
+    setLoading(true);
+    const {data} = await sb.from('clients').select('*').order('name');
+    setClients(data||[]); setLoading(false);
+  }
+  async function save(e) {
+    e.preventDefault();
+    await sb.from('clients').insert(form);
+    setShowAdd(false); setForm({name:'',address:'',phone:'',email:''}); load();
+  }
+
+  return (
+    <div>
+      <div className="page-header">
+        <div><div className="page-title">👤 Clients</div><div className="page-sub">{clients.length} clients</div></div>
+        <button className="btn-orange" onClick={()=>setShowAdd(true)}>{Icon.plus} Add Client</button>
+      </div>
+      <div className="page-content">
+        <div className="card">
+          {loading?<div className="loading"><div className="spinner"/>Loading...</div>:
+          clients.length===0?<div className="empty"><div className="empty-icon">👤</div>No clients yet</div>:
+          <div className="table-wrap">
+            <table>
+              <thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Address</th></tr></thead>
+              <tbody>
+                {clients.map(c=>(
+                  <tr key={c.id}>
+                    <td><strong>{c.name}</strong></td>
+                    <td>{c.phone||'—'}</td>
+                    <td>{c.email||'—'}</td>
+                    <td style={{maxWidth:200,fontSize:12,color:'var(--text2)'}}>{c.address||'—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>}
+        </div>
+      </div>
+      {showAdd && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-title">Add Client <button className="modal-close" onClick={()=>setShowAdd(false)}>{Icon.close}</button></div>
+            <form onSubmit={save}>
+              <div className="form-group"><label className="form-label">Client Name</label>
+                <input className="form-input" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} required/></div>
+              <div className="form-group"><label className="form-label">Address</label>
+                <textarea className="form-textarea" value={form.address} onChange={e=>setForm({...form,address:e.target.value})}/></div>
+              <div className="form-row">
+                <div className="form-group"><label className="form-label">Phone</label>
+                  <input className="form-input" value={form.phone} onChange={e=>setForm({...form,phone:e.target.value})} placeholder="9XXXXXXXXX"/></div>
+                <div className="form-group"><label className="form-label">Email</label>
+                  <input className="form-input" type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/></div>
+              </div>
+              <div style={{display:'flex',gap:10,marginTop:8}}>
+                <button className="btn-orange" style={{flex:1}} type="submit">Save Client</button>
+                <button className="btn-ghost" type="button" onClick={()=>setShowAdd(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── PAYMENTS PAGE ────────────────────────────────────────
+function PaymentsPage() {
+  const [payments,setPayments] = React.useState([]);
+  const [showReceipt,setShowReceipt] = React.useState(null);
+  const [loading,setLoading] = React.useState(true);
+
+  React.useEffect(()=>{ load(); },[]);
+  async function load() {
+    setLoading(true);
+    const {data} = await sb.from('payments').select('*,profiles(name),projects(*,clients(*))').order('created_at',{ascending:false});
+    setPayments(data||[]); setLoading(false);
+  }
+
+  const total = payments.reduce((s,p)=>s+Number(p.amount||0),0);
+
+  return (
+    <div>
+      <div className="page-header">
+        <div><div className="page-title">💰 Payments</div><div className="page-sub">Total collected: {fmt(total)}</div></div>
+      </div>
+      <div className="page-content">
+        <div className="card">
+          {loading?<div className="loading"><div className="spinner"/>Loading...</div>:
+          payments.length===0?<div className="empty"><div className="empty-icon">💰</div>No payments yet</div>:
+          payments.map(p=>(
+            <div key={p.id} className="payment-row">
+              <div>
+                <div className="payment-amount">{fmt(p.amount)}</div>
+                <div className="payment-info">{p.projects?.title} • {p.projects?.clients?.name}</div>
+                <div className="payment-info">Installment #{p.installment_number} • {fmtDate(p.payment_date)} • {p.profiles?.name||'—'}</div>
+              </div>
+              <button className="btn-orange" style={{fontSize:12,padding:'6px 12px',flexShrink:0}} onClick={()=>setShowReceipt({payment:p,project:p.projects})}>
+                {Icon.print} Receipt
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+      {showReceipt && <ReceiptModal data={showReceipt} onClose={()=>setShowReceipt(null)}/>}
+    </div>
+  );
+}
+
+// ─── TASKS PAGE ───────────────────────────────────────────
+function TasksPage({isAdmin,userId}) {
+  const [tasks,setTasks] = React.useState([]);
+  const [team,setTeam] = React.useState([]);
+  const [showAdd,setShowAdd] = React.useState(false);
+  const [form,setForm] = React.useState({title:'',priority:'medium',due_date:'',assigned_to:userId||''});
+  const [loading,setLoading] = React.useState(true);
+
+  React.useEffect(()=>{ load(); },[]);
+  async function load() {
+    setLoading(true);
+    let q = sb.from('daily_tasks').select('*,profiles(name)').order('due_date');
+    if(!isAdmin && userId) q = q.eq('assigned_to',userId);
+    const {data} = await q;
+    setTasks(data||[]);
+    if(isAdmin) {
+      const {data:t} = await sb.from('profiles').select('*').order('name');
+      setTeam(t||[]);
+    }
+    setLoading(false);
+  }
+  async function toggleTask(id, status) {
+    await sb.from('daily_tasks').update({status:status==='complete'?'pending':'complete'}).eq('id',id);
+    load();
+  }
+  async function save(e) {
+    e.preventDefault();
+    await sb.from('daily_tasks').insert(form);
+    setShowAdd(false); setForm({title:'',priority:'medium',due_date:'',assigned_to:userId||''}); load();
+  }
+
+  const pending = tasks.filter(t=>t.status!=='complete');
+  const done = tasks.filter(t=>t.status==='complete');
+
+  return (
+    <div>
+      <div className="page-header">
+        <div><div className="page-title">☑ Daily Tasks</div><div className="page-sub">{pending.length} pending, {done.length} done</div></div>
+        {isAdmin && <button className="btn-orange" onClick={()=>setShowAdd(true)}>{Icon.plus} Add Task</button>}
+      </div>
+      <div className="page-content">
+        {loading?<div className="loading"><div className="spinner"/>Loading...</div>:<>
+        <div className="card">
+          <div className="card-title">Pending ({pending.length})</div>
+          {pending.length===0?<div className="empty"><div className="empty-icon">✅</div>All done!</div>:
+          pending.map(t=>(
+            <div key={t.id} className="task-item">
+              <div className="task-check" onClick={()=>toggleTask(t.id,t.status)} style={{borderColor:'var(--orange)'}}>
+                {t.status==='complete'&&'✓'}
+              </div>
+              <div style={{flex:1}}>
+                <div className="task-title">{t.title}</div>
+                {t.due_date && <div style={{fontSize:11,color:'var(--text2)',marginTop:2}}>{fmtDate(t.due_date)}</div>}
+              </div>
+              <span className={`task-badge badge-status badge-${t.priority==='high'?'overdue':t.priority==='medium'?'inprogress':'active'}`}>{t.priority}</span>
+              {isAdmin && t.profiles && <span className="chip">{t.profiles.name}</span>}
+            </div>
+          ))}
+        </div>
+        {done.length>0 && (
+          <div className="card">
+            <div className="card-title" style={{color:'var(--text2)'}}>Completed ({done.length})</div>
+            {done.map(t=>(
+              <div key={t.id} className="task-item" style={{opacity:0.6}}>
+                <div className="task-check done" onClick={()=>toggleTask(t.id,t.status)}>✓</div>
+                <div className="task-title done-text">{t.title}</div>
+              </div>
+            ))}
+          </div>
+        )}
+        </>}
+      </div>
+      {showAdd && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-title">Add Task <button className="modal-close" onClick={()=>setShowAdd(false)}>{Icon.close}</button></div>
+            <form onSubmit={save}>
+              <div className="form-group"><label className="form-label">Task Title</label>
+                <input className="form-input" value={form.title} onChange={e=>setForm({...form,title:e.target.value})} required/></div>
+              <div className="form-row">
+                <div className="form-group"><label className="form-label">Priority</label>
+                  <select className="form-select" value={form.priority} onChange={e=>setForm({...form,priority:e.target.value})}>
+                    <option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option>
+                  </select></div>
+                <div className="form-group"><label className="form-label">Due Date</label>
+                  <input className="form-input" type="date" value={form.due_date} onChange={e=>setForm({...form,due_date:e.target.value})}/></div>
+              </div>
+              <div className="form-group"><label className="form-label">Assign To</label>
+                <select className="form-select" value={form.assigned_to} onChange={e=>setForm({...form,assigned_to:e.target.value})}>
+                  <option value="">Select Member</option>
+                  {team.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}
+                </select></div>
+              <div style={{display:'flex',gap:10,marginTop:8}}>
+                <button className="btn-orange" style={{flex:1}} type="submit">Add Task</button>
+                <button className="btn-ghost" type="button" onClick={()=>setShowAdd(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── INSTALLATIONS PAGE ───────────────────────────────────
+function InstallationsPage() {
+  const [projects,setProjects] = React.useState([]);
+  const [loading,setLoading] = React.useState(true);
+
+  React.useEffect(()=>{
+    setLoading(true);
+    sb.from('projects').select('*,clients(name),project_stages(*,profiles(name))').order('created_at',{ascending:false}).then(({data})=>{
+      const active = (data||[]).filter(p=>p.status!=='complete');
+      setProjects(active); setLoading(false);
+    });
+  },[]);
+
+  return (
+    <div>
+      <div className="page-header">
+        <div><div className="page-title">⚡ On-Going Installations</div><div className="page-sub">{projects.length} active</div></div>
+      </div>
+      <div className="page-content">
+        {loading?<div className="loading"><div className="spinner"/>Loading...</div>:
+        projects.length===0?<div className="empty"><div className="empty-icon">⚡</div>No active installations</div>:
+        projects.map(p=>{
+          const stages = p.project_stages||[];
+          const installStage = stages.find(s=>s.stage_name==='Installation');
+          return (
+            <div key={p.id} className="project-card">
+              <div className="project-header">
+                <div><div className="project-name">{p.title}</div><div className="project-client">👤 {p.clients?.name}</div></div>
+                <span className={`badge-status badge-${installStage?.status||'pending'}`}>{installStage?.status||'pending'}</span>
+              </div>
+              <div className="stages-bar">
+                {stages.sort((a,b)=>a.stage_order-b.stage_order).map(s=>(
+                  <div key={s.id} className={`stage-item ${s.status==='complete'?'done':s.status==='inprogress'?'current':'pending'}`}>{s.stage_name.split(' ')[0]}</div>
+                ))}
+              </div>
+              <div className="project-meta">
+                {installStage?.profiles && <div className="meta-item">Engineer: <strong>{installStage.profiles.name}</strong></div>}
+                <div className="meta-item">Capacity: <strong>{p.capacity||'—'}</strong></div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── AGENT APP ────────────────────────────────────────────
+function AgentApp({user,profile}) {
+  const [page,setPage] = React.useState('dashboard');
+  const [sidebarOpen,setSidebarOpen] = React.useState(false);
+  const nav = (p) => { setPage(p); setSidebarOpen(false); };
+
+  return (
+    <div className="app">
+      <div className={`mobile-overlay ${sidebarOpen?'show':''}`} onClick={()=>setSidebarOpen(false)}/>
+      <div className={`sidebar ${sidebarOpen?'open':''}`}>
+        <div className="sidebar-brand">
+          <div className="brand-logo">SK</div>
+          <div><div className="brand-text">Solar<span>Kraft</span></div><div className="brand-sub">My Workspace</div></div>
+        </div>
+        <div className="sidebar-section">My Work</div>
+        {[
+          {id:'dashboard',label:'My Dashboard',icon:Icon.dash},
+          {id:'tasks',label:'My Tasks',icon:Icon.tasks},
+          {id:'projects',label:'My Projects',icon:Icon.projects},
+        ].map(item=>(
+          <div key={item.id} className={`nav-item ${page===item.id?'active':''}`} onClick={()=>nav(item.id)}>
+            <span>{item.icon}</span><span>{item.label}</span>
+          </div>
+        ))}
+        <div className="sidebar-user">
+          <div className="user-card">
+            <div className="user-avatar">{initials(profile?.name||'A')}</div>
+            <div><div className="user-name">{profile?.name}</div><div className="user-role">{profile?.designation||'Agent'}</div></div>
+          </div>
+          <button className="logout-btn" onClick={()=>sb.auth.signOut()}>{Icon.logout} Sign Out</button>
+        </div>
+      </div>
+      <div className="main">
+        <div className="mobile-top no-print">
+          <button className="hamburger" onClick={()=>setSidebarOpen(true)}>{Icon.menu}</button>
+          <div className="brand-text" style={{fontSize:18}}>Solar<span style={{color:'var(--orange)'}}>Kraft</span></div>
+        </div>
+        {page==='dashboard' && <AgentDashboard profile={profile} userId={user.id}/>}
+        {page==='tasks' && <TasksPage isAdmin={false} userId={user.id}/>}
+        {page==='projects' && <AgentProjects userId={user.id}/>}
+      </div>
+    </div>
+  );
+}
+
+// ─── AGENT DASHBOARD ──────────────────────────────────────
+function AgentDashboard({profile,userId}) {
+  const [stages,setStages] = React.useState([]);
+  const [tasks,setTasks] = React.useState([]);
+
+  React.useEffect(()=>{
+    sb.from('project_stages').select('*,projects(*,clients(name))').eq('assigned_to',userId).neq('status','complete').then(({data})=>setStages(data||[]));
+    sb.from('daily_tasks').select('*').eq('assigned_to',userId).eq('status','pending').order('due_date').limit(5).then(({data})=>setTasks(data||[]));
+  },[userId]);
+
+  async function updateStage(id,status) {
+    const up = {status};
+    if(status==='complete') up.completed_at = new Date().toISOString();
+    await sb.from('project_stages').update(up).eq('id',id);
+    const {data} = await sb.from('project_stages').select('*,projects(*,clients(name))').eq('assigned_to',userId).neq('status','complete');
+    setStages(data||[]);
+  }
+
+  async function toggleTask(id,status) {
+    await sb.from('daily_tasks').update({status:status==='complete'?'pending':'complete'}).eq('id',id);
+    const {data} = await sb.from('daily_tasks').select('*').eq('assigned_to',userId).eq('status','pending').order('due_date').limit(5);
+    setTasks(data||[]);
+  }
+
+  return (
+    <div>
+      <div className="page-header">
+        <div><div className="page-title">Namaste, {profile?.name?.split(' ')[0]} 👋</div>
+        <div className="page-sub">{new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})}</div></div>
+      </div>
+      <div className="page-content">
+        <div className="stats-grid">
+          <div className="stat-card orange"><div className="stat-num">{stages.length}</div><div className="stat-label">Active Stages</div></div>
+          <div className="stat-card yellow"><div className="stat-num">{tasks.length}</div><div className="stat-label">Pending Tasks</div></div>
+        </div>
+
+        {stages.length>0 && (
+          <div className="card">
+            <div className="card-title">My Assigned Stages</div>
+            {stages.map(s=>(
+              <div key={s.id} className="my-task-card">
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+                  <div>
+                    <div className="stage-name">{s.stage_name}</div>
+                    <div style={{fontSize:13,color:'var(--text2)',marginTop:2}}>{s.projects?.title} • {s.projects?.clients?.name}</div>
+                  </div>
+                  <span className={`badge-status badge-${s.status}`}>{s.status}</span>
+                </div>
+                <div style={{display:'flex',gap:8,marginTop:12}}>
+                  {s.status==='pending' && <button className="btn-orange" style={{fontSize:12,padding:'7px 14px'}} onClick={()=>updateStage(s.id,'inprogress')}>▶ Start Work</button>}
+                  {s.status==='inprogress' && <button className="btn-orange" style={{fontSize:12,padding:'7px 14px',background:'var(--green)'}} onClick={()=>updateStage(s.id,'complete')}>✓ Mark Complete</button>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tasks.length>0 && (
+          <div className="card">
+            <div className="card-title">Today's Tasks</div>
+            {tasks.map(t=>(
+              <div key={t.id} className="task-item">
+                <div className="task-check" onClick={()=>toggleTask(t.id,t.status)} style={{borderColor:'var(--orange)'}}/>
+                <div className="task-title">{t.title}</div>
+                <span className={`task-badge badge-status badge-${t.priority==='high'?'overdue':t.priority==='medium'?'inprogress':'active'}`}>{t.priority}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {stages.length===0 && tasks.length===0 && (
+          <div className="empty"><div className="empty-icon">☀️</div><p>No tasks assigned yet.<br/>Check back soon!</p></div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── AGENT PROJECTS ───────────────────────────────────────
+function AgentProjects({userId}) {
+  const [stages,setStages] = React.useState([]);
+  const [loading,setLoading] = React.useState(true);
+
+  React.useEffect(()=>{
+    sb.from('project_stages').select('*,projects(*,clients(name),project_stages(*))').eq('assigned_to',userId).order('created_at').then(({data})=>{
+      setStages(data||[]); setLoading(false);
+    });
+  },[userId]);
+
+  async function updateStatus(id,status) {
+    const up={status};
+    if(status==='complete') up.completed_at=new Date().toISOString();
+    await sb.from('project_stages').update(up).eq('id',id);
+    const {data} = await sb.from('project_stages').select('*,projects(*,clients(name),project_stages(*))').eq('assigned_to',userId).order('created_at');
+    setStages(data||[]);
+  }
+
+  return (
+    <div>
+      <div className="page-header">
+        <div><div className="page-title">📁 My Projects</div><div className="page-sub">{stages.length} assigned stages</div></div>
+      </div>
+      <div className="page-content">
+        {loading?<div className="loading"><div className="spinner"/>Loading...</div>:
+        stages.length===0?<div className="empty"><div className="empty-icon">📁</div>No projects assigned yet</div>:
+        stages.map(s=>{
+          const allStages = s.projects?.project_stages||[];
+          const done = allStages.filter(x=>x.status==='complete').length;
+          const pct = allStages.length?Math.round(done/allStages.length*100):0;
+          return (
+            <div key={s.id} className="my-task-card">
+              <div className="project-header">
+                <div><div className="project-name">{s.projects?.title}</div><div className="project-client">👤 {s.projects?.clients?.name}</div></div>
+                <span className={`badge-status badge-${s.status}`}>{s.status}</span>
+              </div>
+              <div className="stage-detail">
+                <div className="stage-name">My Stage: {s.stage_name}</div>
+                <div className="progress-bar"><div className="progress-fill" style={{width:pct+'%'}}/></div>
+                <div style={{fontSize:12,color:'var(--text2)'}}>Project overall: {pct}% complete</div>
+              </div>
+              <div style={{display:'flex',gap:8,marginTop:12,flexWrap:'wrap'}}>
+                {s.status==='pending' && <button className="btn-orange" style={{fontSize:13}} onClick={()=>updateStatus(s.id,'inprogress')}>▶ Start</button>}
+                {s.status==='inprogress' && <button className="btn-orange" style={{fontSize:13,background:'var(--green)'}} onClick={()=>updateStatus(s.id,'complete')}>✓ Complete</button>}
+                {s.status==='complete' && <span className="chip" style={{color:'var(--green)',borderColor:'var(--green)'}}>✓ Done on {fmtDate(s.completed_at)}</span>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
